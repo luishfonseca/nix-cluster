@@ -2,8 +2,8 @@
 
 This flake enables the development of NixOS machine clusters. Key features include:
 
-- **Stateless** - The system stays on memory, no state gets written to the disk.
-- **Testable** - Run all systems as VMs with a single command.
+- **Stateless** - The node's root stays on RAM, no state gets written to the disk.
+- **Testable** - A single command to run all nodes as VMs.
 
 ## Local Running
 
