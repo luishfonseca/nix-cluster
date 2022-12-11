@@ -40,22 +40,10 @@
       ${pkgs.tmux}/bin/tmux attach-session -t cluster
     '';
 
-  cidrToMask = cidr:
-    let
-      part = n: if n == 0 then 0 else part (n - 1) / 2 + 128;
-      fullParts = cidr / 8;
-    in
-    lib.genList
-      (i:
-        if i < fullParts then 255
-        else if fullParts < i then 0
-        else part (lib.mod cidr 8)
-      ) 4;
-
   setupNetwork = nodes: { bridge, gateway, cidr, dhcpRange }:
     let
       netmask = lib.concatMapStringsSep "." toString (lib.my.cidrToMask cidr);
-      network = lib.concatMapStringsSep "." toString (lib.zipListsWith lib.bitAnd (map lib.toInt (lib.splitString "." gateway)) (lib.my.cidrToMask cidr));
+      network = lib.concatMapStringsSep "." toString (lib.my.maskIP gateway cidr);
 
       taps = lib.concatStringsSep "\n" (lib.mapAttrsToList
         (_: node: ''
@@ -94,27 +82,4 @@
       --dhcp-range=${dhcpRange},${netmask} --dhcp-option=3,${gateway} \
       --dhcp-leasefile=/dev/null --dhcp-no-override --dhcp-sequential-ip
     '';
-
-  mkNodePackage = (name: node: pkgs.symlinkJoin {
-    inherit name;
-    paths = with node.config.system.build; [
-      netbootRamdisk
-      kernel
-      netbootIpxeScript
-    ];
-  });
-
-  mkApp = path: { type = "app"; program = "${path}"; };
-
-  mkNode = (name: modules: lib.nixosSystem {
-    inherit system pkgs lib;
-    modules = [
-      ({ modulesPath, ... }: {
-        imports = [ (modulesPath + "/installer/netboot/netboot.nix") ];
-        networking.hostName = name;
-        system.stateVersion = lib.versions.majorMinor lib.version; # State is not persisted so this can always be latest.
-      })
-    ] ++ modules;
-  });
 }
-

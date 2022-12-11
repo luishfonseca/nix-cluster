@@ -2,7 +2,7 @@
   let
     pkgs = import inputs.nixpkgs { inherit system; };
     lib = inputs.nixpkgs.lib.extend
-      (final: prev: { my = import ./lib.nix { inherit pkgs system inputs; lib = final; }; });
+      (final: prev: import ./lib { inherit inputs pkgs system; lib = final; });
 
     nodes = lib.mapAttrs lib.my.mkNode {
       test1 = [
