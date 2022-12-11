@@ -1,4 +1,4 @@
-{ pkgs, lib, system, ... }: {
+{ pkgs, lib, system, root, ... }: {
 
   mkNodePackage = (name: node: pkgs.symlinkJoin {
     inherit name;
@@ -11,15 +11,16 @@
 
   mkApp = path: { type = "app"; program = "${path}"; };
 
-  mkNode = (name: modules: lib.nixosSystem {
+  mkNode = (name: config: lib.nixosSystem {
     inherit system pkgs lib;
     modules = [
+      config
       ({ modulesPath, ... }: {
         imports = [ (modulesPath + "/installer/netboot/netboot.nix") ];
         networking.hostName = name;
         system.stateVersion = lib.versions.majorMinor lib.version; # State is not persisted so this can always be latest.
       })
-    ] ++ modules;
+    ] ++ (lib.my.listModulesRecursive "${root}/modules");
   });
 }
 

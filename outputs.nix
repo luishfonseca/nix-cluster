@@ -1,29 +1,15 @@
 { self, ... } @ inputs: inputs.utils.lib.eachDefaultSystem (system:
   let
     pkgs = import inputs.nixpkgs { inherit system; };
-    lib = inputs.nixpkgs.lib.extend
-      (final: prev: import ./lib { inherit inputs pkgs system; lib = final; });
+    lib = inputs.nixpkgs.lib.extend (final: prev: import ./lib {
+      inherit inputs pkgs system;
+      lib = final;
+      root = ./.;
+    });
 
     nodes = lib.mapAttrs lib.my.mkNode {
-      test1 = [
-        ({ modulesPath, ... }: {
-          imports = [
-            (modulesPath + "/profiles/qemu-guest.nix")
-            (modulesPath + "/profiles/minimal.nix")
-          ];
-        })
-        ({ services.getty.autologinUser = "root"; })
-      ];
-
-      test2 = [
-        ({ modulesPath, ... }: {
-          imports = [
-            (modulesPath + "/profiles/qemu-guest.nix")
-            (modulesPath + "/profiles/minimal.nix")
-          ];
-        })
-        ({ services.getty.autologinUser = "root"; })
-      ];
+      test1.cluster.virtual = true;
+      test2.cluster.virtual = true;
     };
 
     nodePackages = lib.mapAttrs lib.my.mkNodePackage nodes;
