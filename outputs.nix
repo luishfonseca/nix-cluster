@@ -25,9 +25,9 @@
       default = lib.my.mkApp (lib.my.clusterRunner nodes);
       network = lib.my.mkApp (lib.my.setupNetwork nodes {
         bridge = "br8";
-        gateway = "10.0.0.254";
-        cidr = 8;
-        dhcpRange = "10.0.0.1,10.0.0.253";
+        gateway = "10.225.0.254";
+        cidr = 16;
+        dhcpRange = "10.225.0.1,10.225.0.253";
       });
     } // lib.mapAttrs (name: node: lib.my.mkApp (lib.my.nodeRunner node)) nodes;
   }
